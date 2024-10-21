@@ -16,17 +16,14 @@ fn parse_whitespace(input: &str) -> IResult<&str, &str, ParserError> {
     map(multispace0, |x| x)(input)
 }
 
-fn parse_comment(input: &str) -> IResult<&str, &str, ParserError> {
-    preceded(
-        tag("//"),
-        not_line_ending
-    )(input).and_then(|(next_input, comment)| {
-        match line_ending::<&str, ParserError>(next_input) {
-            Ok((remaining, _)) => Ok((remaining, comment)),
-            Err(nom::Err::Error(_)) => Ok((next_input, comment)),
-            Err(e) => Err(e),
-        }
-    })
+fn parse_comment(input: &str) -> IResult<&str, (), ParserError> {
+    map(
+        preceded(
+            tag("//"),
+            terminated(not_line_ending, line_ending)
+        ),
+        |_| ()
+    )(input)
 }
 
 pub fn observe_parse_whitespace() {
